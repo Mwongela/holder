@@ -256,3 +256,8 @@ img {
 [data-role=btn-upload-data] {
     display: none;
 }
+
+html .ui-page-theme-a .ui-btn.ui-checkbox-on.ui-checkbox-on:after {
+    background-color: orange !important;
+    border-color: orange !important;
+}

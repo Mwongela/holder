@@ -35,7 +35,7 @@
                         <p>
                             You can now keep track of your individual savings progress on <span class="gs-group"></span> savers <span
                                 class="gs-goal"></span> savings group as
-                            well as your groups savings progress. Your group has 40 members so far and you have 25 days
+                            well as your groups savings progress. Your group has 40 members so far and you have <span data-role="rem-days">0</span> days
                             remaining to reach your savings goals
                         </p>
                     </div>
@@ -66,7 +66,7 @@
                         <a href="contribution.html">
                             <div class="orange-round"></div>
                             <h3 class="align-center title-green-smaller">Amount saved</h3>
-                            <h1 class="group-stat">&#8358; 1,200</h1>
+                            <h1 class="group-stat">&#8358; <span id="my-amount-saved"></span></h1>
                         </a>
 
                     </div>
@@ -74,7 +74,7 @@
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Amount remaining</h3>
-                        <h1 class="group-stat">&#8358; 800</h1>
+                        <h1 class="group-stat">&#8358; <span id="amount-balance"></span></h1>
 
                     </div>
 
@@ -82,7 +82,7 @@
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Days left</h3>
-                        <h1 class="group-stat">10</h1>
+                        <h1 class="group-stat"><span data-role="rem-days"></span></h1>
 
                     </div>
                 </div>
@@ -125,7 +125,7 @@
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Days Left</h3>
-                        <h1 class="group-stat">10</h1>
+                        <h1 class="group-stat"><span data-role="rem-days"></span></h1>
 
                     </div>
 

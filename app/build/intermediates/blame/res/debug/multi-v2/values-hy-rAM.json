@@ -1,25 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "/Users/mwongela/Development/work/financial_inclusion/android/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-hy-rAM/values-hy-rAM.xml",
+            "outputFile": "/Users/mwongela/Development/personal/holder/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-hy-rAM/values-hy-rAM.xml",
             "map": [
                 {
-                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/81bd69cc12b86ee103a79e8cb07f24db/res/values-hy-rAM/values-hy-rAM.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,158,266,389,490,600,690,796,911,993,1074,1159,1266,1373,1472,1582,1689,1789,1909,2008",
-                        "endColumns": "102,107,122,100,109,89,105,114,81,80,84,106,106,98,109,106,99,119,98,100",
-                        "endOffsets": "153,261,384,485,595,685,791,906,988,1069,1154,1261,1368,1467,1577,1684,1784,1904,2003,2104"
-                    }
-                }
-            ]
-        },
-        {
-            "outputFile": "/Users/mwongela/Development/work/financial_inclusion/nigeria_project/platforms/android/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-hy-rAM/values-hy-rAM.xml",
-            "map": [
-                {
-                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/81bd69cc12b86ee103a79e8cb07f24db/res/values-hy-rAM/values-hy-rAM.xml",
+                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/5cbca3292a5efa8c2390dc2e4fb34174/res/values-hy-rAM/values-hy-rAM.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

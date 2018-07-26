@@ -23,6 +23,7 @@ import org.busaracenter.es.service.ESSyncAdapter;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.regex.Pattern;
 
 public class ES extends CordovaPlugin {
 
@@ -90,7 +91,7 @@ public class ES extends CordovaPlugin {
                     if (previousContributions.split(",").length == 0)
                         allContributions = previousContributions;
                     else
-                        allContributions = previousContributions + inputStat.getFinalInputValue();
+                        allContributions = previousContributions + "," + inputStat.getFinalInputValue();
                     session.setContributions(allContributions);
                 }
             }
@@ -104,16 +105,35 @@ public class ES extends CordovaPlugin {
     private void getSessionDetails(JSONArray args, CallbackContext callbackContext) {
 
         Log.e("STATUS", "Getting session details");
+
+        int[] daysInMonths = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+        Calendar calendar = Calendar.getInstance();
+        int monthDays = daysInMonths[calendar.get(Calendar.MONTH)];
+        int remainingDays = monthDays - calendar.get(Calendar.DATE);
+
         JSONObject json = new JSONObject();
         SessionManager session = new SessionManager(webView.getContext());
+        double maxAmount = Utils.getSavingAmountByGroup().get(session.getGroupType());
+        String contributions = session.getContributions();
+        double totalContributions = 0;
+        for (String c: contributions.split(",")) {
+            if (Pattern.matches("\\d+(\\.\\d+)?", c))
+                totalContributions += Double.parseDouble(c);
+        }
 
         try {
             json.put("phone", session.getPhone());
             json.put("month", session.getMonth());
             json.put("goalType", session.getGoalType());
             json.put("groupType", session.getGroupType());
-            json.put("contributions", session.getContributions());
+            json.put("contributions", contributions);
             json.put("isValid", session.isSessionValid());
+            json.put("maxAmount", maxAmount);
+            json.put("totalContributions", totalContributions);
+            json.put("balance", (maxAmount - totalContributions));
+            json.put("monthDays", monthDays);
+            json.put("remainingDays", remainingDays);
 
             callbackContext.success(json);
 

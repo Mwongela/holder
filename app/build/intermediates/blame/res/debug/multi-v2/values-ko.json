@@ -1,25 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "/Users/mwongela/Development/work/financial_inclusion/nigeria_project/platforms/android/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-ko/values-ko.xml",
+            "outputFile": "/Users/mwongela/Development/personal/holder/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-ko/values-ko.xml",
             "map": [
                 {
-                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/81bd69cc12b86ee103a79e8cb07f24db/res/values-ko/values-ko.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,150,258,381,475,577,659,757,863,942,1018,1098,1196,1291,1386,1486,1582,1681,1796,1890",
-                        "endColumns": "94,107,122,93,101,81,97,105,78,75,79,97,94,94,99,95,98,114,93,100",
-                        "endOffsets": "145,253,376,470,572,654,752,858,937,1013,1093,1191,1286,1381,1481,1577,1676,1791,1885,1986"
-                    }
-                }
-            ]
-        },
-        {
-            "outputFile": "/Users/mwongela/Development/work/financial_inclusion/android/app/build/intermediates/incremental/mergeDebugResources/merged.dir/values-ko/values-ko.xml",
-            "map": [
-                {
-                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/81bd69cc12b86ee103a79e8cb07f24db/res/values-ko/values-ko.xml",
+                    "source": "/Users/mwongela/.gradle/caches/transforms-1/files-1.1/appcompat-v7-24.1.0.aar/5cbca3292a5efa8c2390dc2e4fb34174/res/values-ko/values-ko.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

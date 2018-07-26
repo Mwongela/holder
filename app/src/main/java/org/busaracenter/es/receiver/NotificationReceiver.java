@@ -34,7 +34,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         double totalContributions = 0;
         double balance = 0;
         for (String c: contributions.split(",")) {
-            if (Pattern.matches("\\d+\\.\\d+", c))
+            if (Pattern.matches("\\d+(\\.\\d+)?", c))
                 totalContributions += Double.parseDouble(c);
         }
 

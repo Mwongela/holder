@@ -20,6 +20,12 @@ var app = {
     groupType: "not defined",
     selectedMonth: "",
     contributions: "",
+    isValid: false,
+    maxAmount: 0,
+    totalContributions: 0,
+    balance: 0,
+    monthDays: 0,
+    remainingDays: 0,
 
     dataStore: [],
     populateDs: function populateDs(item) {
@@ -35,49 +41,50 @@ var app = {
         this.currentPageTimestamp = curTimeStamp;
         return moment.duration(moment(curTimeStamp).diff(moment(floorTimeStamp)))._milliseconds;
     },
-    textAnalyticsEngine: function textAnalyticsEngine(inputTxt) {
-        var backspaceCount = 0;
-        var totalKeyPressCount = 0;
-        var timeStartTyping = 0;
-        var timeStopTyping = 0;
-        var timeSpentInField = 0;
-        var finalInputValue = void 0;
-        var finalInputLength = void 0;
-        var intelliWordChanges = [""];
-        var intelliWordIndex = 0;
-        var inputStream = "";
-
-        inputTxt.change(function (e) {
-            finalInputValue = inputTxt.val();
-            finalInputLength = inputTxt.val().length;
-            timeStopTyping = Date.now();
-            timeSpentInField = moment.duration(moment(timeStopTyping).diff(moment(timeStartTyping)));
-            intelliWordChanges.shift();
-        }).keypress(function (e) {
-            totalKeyPressCount++;
-            if (e.keyCode !== 8) {
-                inputStream += e.key;
-            }
-
-            if (e.keyCode === 8) {
-                backspaceCount++;
-                if (inputTxt.val().length === 1) {
-                    intelliWordIndex++;
-                    intelliWordChanges[intelliWordIndex] = inputStream;
-                    inputStream = "";
-                }
-            }
-            if (inputTxt.val().length === 1) {
-                timeStartTyping = Date.now();
-            }
-        });
-    },
     util: {
         getPageTitleFromUrl: function getPageTitleFromUrl(absUrl) {
             var pageIdMatch = /\/(\w+)\./;
             return pageIdMatch.exec(absUrl)[1];
         }
 
+    },
+
+    getMiniMonth(month) {
+        var mm = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        return mm[month];
+    },
+
+    getWeekString: function () {
+        var curr = new Date();
+        var first = curr.getDate() - curr.getDay();
+        var last = first + 6;
+
+        var firstDate = new Date(curr.setDate(first));
+        var lastDate = new Date(curr.setDate(last));
+
+        var week = app.getMiniMonth(firstDate.getMonth()) + " " + firstDate.getDate() + " - "
+            + app.getMiniMonth(lastDate.getMonth()) + " " + lastDate.getDate();
+
+        return week;
+    },
+
+    updateSessionVars: function () {
+        window._es.getSessionDetails(function (session) {
+            app.surveyId = session.phone;
+            app.goalType = session.goalType;
+            app.groupType = session.groupType;
+            app.selectedMonth = session.month;
+            app.contributions = session.contributions;
+            app.isValid = session.isValid;
+            app.maxAmount = session.maxAmount;
+            app.totalContributions = session.totalContributions;
+            app.balance = session.balance;
+            app.remainingDays = session.remainingDays;
+            app.monthDays = session.monthDays;
+        }, function (error) {
+            console.error(error);
+        }, "");
     },
 
     initialize: function initialize() {
@@ -92,22 +99,22 @@ var app = {
         document.addEventListener('deviceready', app.onDeviceReady, false);
     },
 
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function onDeviceReady() {
 
-        console.log("Ready");
-
         window._es.getSessionDetails(function (session) {
+            app.surveyId = session.phone;
+            app.goalType = session.goalType;
+            app.groupType = session.groupType;
+            app.selectedMonth = session.month;
+            app.contributions = session.contributions;
+            app.isValid = session.isValid;
+            app.maxAmount = session.maxAmount;
+            app.totalContributions = session.totalContributions;
+            app.balance = session.balance;
+            app.remainingDays = session.remainingDays;
+            app.monthDays = session.monthDays;
 
-            if (session.isValid) {
-                app.surveyId = session.phone;
-                app.goalType = session.goalType;
-                app.groupType = session.groupType;
-                app.selectedMonth = session.month;
-                app.contributions = session.contributions;
+            if (app.isValid) {
 
                 setTimeout(function () {
                     $.mobile.changePage('group_stats.html');
@@ -125,13 +132,6 @@ var app = {
                 $.mobile.changePage('login.html');
             }, 100);
         }, "");
-
-        // $(document).on('pageinit', 'div:jqmData(role="page")', function (event) {
-        //
-        //     if (app.surveyId == null) {
-        //         $.mobile.changePage("login.html");
-        //     }
-        // });
 
         $(document).on('click', '[data-role="goal_type_selection"]', function (e) {
 
@@ -197,6 +197,49 @@ var app = {
             $("#n_goal-example").html(example);
         });
 
+        $(document).on('pagebeforeshow', '#contribution', function (e) {
+            var image = $("#c_goal-img");
+            var goal = $("#c_goal-title");
+            var week = $("#c_week");
+            var button = $("#c_contributions-goal-vehicle");
+
+            var goalType = app.goalType;
+
+            var img = 'img/default-image.jpg';
+            var example = "";
+
+            if (goalType === 'entrepreneurship') {
+                img = 'img/icon-bulb.png';
+            } else if (goalType === 'employability') {
+                img = 'img/icon-briefcase.png';
+            } else if (goalType === 'personal') {
+                img = 'img/icon-heart.png';
+            }
+
+            image.attr("src", img);
+            goal.html(goalType.capitalize());
+            week.html(app.getWeekString());
+
+            button.click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var amount = $("[name=contribution_amount]").val();
+                try {
+                    amount = parseFloat(amount);
+
+                    if ((amount <= 0 || amount > app.balance) && app.groupType !== 'champion') {
+                        window.alert("Invalid contribution amount. Please note you can contribute upto " + app.balance);
+                        return;
+                    } else {
+                        $.mobile.changePage('contribution_vehicle.html');
+                    }
+
+                } catch (e) {
+                    window.alert("Invalid input. Please try again");
+                }
+            });
+        });
+
         $(document).on('pagebeforeshow', '#goal_amount_selection', function (e) {
             $(document).find('.select-amount-goal-type').html(app.goalType.capitalize());
         });
@@ -237,6 +280,7 @@ var app = {
         });
 
         $(document).on('pagebeforeshow', '#group-stats', function (e) {
+
             var goalType = app.goalType;
             var group = app.groupType;
             var amount = 0;
@@ -258,6 +302,9 @@ var app = {
             $("#gs-img").attr('src', img);
             $(".gs-goal").html(goalType.capitalize());
             $(".gs-group").html(group.capitalize());
+            $("[data-role=rem-days]").html(app.remainingDays);
+            $("#my-amount-saved").html(app.totalContributions);
+            $("#amount-balance").html(app.balance);
         });
 
         $(document).on('change', 'input[name=month]', function (e) {
@@ -289,6 +336,8 @@ var app = {
         }, false);
 
         $(document).on("pagecontainerload", function (event, data) {
+
+            app.updateSessionVars();
 
             var pageAnalytics = {};
 
