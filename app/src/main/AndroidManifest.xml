@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<manifest android:hardwareAccelerated="true" android:name="org.busaracenter.es.App" android:versionCode="10000" android:versionName="1.0.0" package="org.busaracenter.es" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+<manifest android:hardwareAccelerated="true" android:name="org.busaracenter.es.App"
+    android:versionCode="10001"
+    android:versionName="1.0.1" package="org.busaracenter.es" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:resizeable="true" android:smallScreens="true" android:xlargeScreens="true" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application android:hardwareAccelerated="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:name="org.busaracenter.es.App" android:supportsRtl="true" tools:replace="android:icon">
@@ -10,7 +12,7 @@
             </intent-filter>
         </activity>
         <meta-data android:name="DATABASE" android:value="_es.db" />
-        <meta-data android:name="VERSION" android:value="2" />
+        <meta-data android:name="VERSION" android:value="3" />
         <meta-data android:name="QUERY_LOG" android:value="true" />
         <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="org.busaracenter.es" />
         <provider android:authorities="org.busaracenter.es.content" android:exported="false" android:label="Empower Savings" android:name=".service.ESContentProvider" android:syncable="true" />

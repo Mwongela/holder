@@ -12,6 +12,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.busaracenter.es.model.GroupSaving;
 import org.busaracenter.es.model.InputStat;
 import org.busaracenter.es.model.PageStat;
 import org.busaracenter.es.receiver.NotificationReceiver;
@@ -22,7 +23,10 @@ import org.json.JSONException;
 import org.busaracenter.es.service.ESSyncAdapter;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class ES extends CordovaPlugin {
@@ -45,7 +49,25 @@ public class ES extends CordovaPlugin {
         } else if (action.equals("getSessionDetails")) {
             getSessionDetails(args, callbackContext);
             return true;
-
+        } else if (action.equals("saveGoalType")) {
+            saveGoalType(args, callbackContext);
+            return true;
+        } else if (action.equals("saveGroupType")) {
+            saveGroupType(args, callbackContext);
+        } else if (action.equals("getGroupStatistics")) {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject stats = getGroupStatistics();
+                    cordova.getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            callbackContext.success(stats);
+                        }
+                    });
+                }
+            });
+            return true;
         }
 
         return super.execute(action, args, callbackContext);
@@ -64,6 +86,7 @@ public class ES extends CordovaPlugin {
 
             if (stat.getPageName().endsWith("goal_type_desc")) {
                 String goalType = stat.getPageName().replace("_goal_type_desc", "");
+                Log.e("STATUS", "Setting goal type " + goalType);
                 session.setGoalType(goalType);
 
             } else if (stat.getPageName().endsWith("goal_amount_selection_complete")) {
@@ -71,8 +94,6 @@ public class ES extends CordovaPlugin {
                 session.setGroupType(Utils.getGroupType(groupType));
 
             }
-
-            Utils.scheduleAlarmManager(webView.getContext());
 
             if (stat.getIsInputPresent().equalsIgnoreCase("yes")) {
                 InputStat inputStat = stat.getInputStats();
@@ -89,10 +110,20 @@ public class ES extends CordovaPlugin {
                     String previousContributions = session.getContributions();
                     String allContributions;
                     if (previousContributions.split(",").length == 0)
-                        allContributions = previousContributions;
+                        allContributions = inputStat.getFinalInputValue();
                     else
                         allContributions = previousContributions + "," + inputStat.getFinalInputValue();
                     session.setContributions(allContributions);
+
+                    try {
+                        String finalInput = inputStat.getFinalInputValue();
+                        if (Pattern.matches("\\d+(\\.\\d+)?", finalInput)) {
+                            double amount = Double.parseDouble(finalInput);
+                            saveGroupContribution(amount, session);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
 
@@ -100,6 +131,18 @@ public class ES extends CordovaPlugin {
             ex.printStackTrace();
             callbackContext.error(ex.getMessage());
         }
+    }
+
+    private void saveGroupContribution(double amount, SessionManager session) {
+
+        GroupSaving contrib = new GroupSaving();
+        contrib.setAmount(amount);
+        contrib.setPhoneNumber(session.getPhone());
+        contrib.setMonth(session.getMonth());
+        contrib.setGroupType(session.getGroupType());
+        contrib.setGoalType(session.getGoalType());
+
+        contrib.save();
     }
 
     private void getSessionDetails(JSONArray args, CallbackContext callbackContext) {
@@ -114,10 +157,13 @@ public class ES extends CordovaPlugin {
 
         JSONObject json = new JSONObject();
         SessionManager session = new SessionManager(webView.getContext());
-        double maxAmount = Utils.getSavingAmountByGroup().get(session.getGroupType());
+        double maxAmount = 10;
+        if (!session.getGroupType().equals("")) {
+            maxAmount = Utils.getSavingAmountByGroup().get(session.getGroupType());
+        }
         String contributions = session.getContributions();
         double totalContributions = 0;
-        for (String c: contributions.split(",")) {
+        for (String c : contributions.split(",")) {
             if (Pattern.matches("\\d+(\\.\\d+)?", c))
                 totalContributions += Double.parseDouble(c);
         }
@@ -141,5 +187,84 @@ public class ES extends CordovaPlugin {
             ex.printStackTrace();
             callbackContext.error(ex.getMessage());
         }
+    }
+
+    private void saveGoalType(JSONArray args, CallbackContext callbackContext) {
+        Log.e("STATUS", "Saving goal Type");
+        try {
+            String goalType = args.getString(0);
+            Log.e("GOAL_TYPE", args.toString());
+            SessionManager session = new SessionManager(webView.getContext());
+            session.setGoalType(goalType);
+            callbackContext.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void saveGroupType(JSONArray args, CallbackContext callbackContext) {
+        Log.e("STATUS", "Saving group Type");
+        try {
+            String groupType = args.getString(0);
+            Log.e("GOAL_TYPE", args.toString());
+            SessionManager session = new SessionManager(webView.getContext());
+            session.setGroupType(groupType);
+            callbackContext.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private JSONObject getGroupStatistics() {
+        SessionManager session = new SessionManager(webView.getContext());
+        JSONObject json = new JSONObject();
+
+        try {
+
+            List<GroupSaving> groupSavings = GroupSaving.find(GroupSaving.class, "MONTH=?", session.getMonth());
+            double groupTotal = 0;
+            double groupMax = 0;
+            double groupRem = 0;
+            HashMap<String, Double> groupMembers = new HashMap<String, Double>();
+            int goalReachers = 0;
+
+            for (GroupSaving groupSaving: groupSavings) {
+
+                groupTotal += groupSaving.getAmount();
+
+                if (!groupMembers.containsKey(groupSaving.getPhoneNumber()))
+                    groupMembers.put(groupSaving.getPhoneNumber(), 0.0);
+
+                double mmAmount = groupMembers.get(groupSaving.getPhoneNumber());
+                mmAmount += groupSaving.getAmount();
+                groupMembers.put(groupSaving.getPhoneNumber(), mmAmount);
+            }
+
+            int groupSize = groupMembers.keySet().size();
+            groupMax = groupSize * Utils.getSavingAmountByGroup().get(session.getGroupType());
+
+            if (groupMax > groupTotal)
+                groupRem = groupMax - groupTotal;
+
+            for (String key: groupMembers.keySet()) {
+                Double mmAmount = groupMembers.get(key);
+                if (mmAmount >= Utils.getSavingAmountByGroup().get(session.getGroupType())) {
+                    goalReachers += 1;
+                }
+            }
+
+            json.put("groupTotal", groupTotal);
+            json.put("groupMax", groupMax);
+            json.put("groupRem", groupRem);
+            json.put("goalReachers", goalReachers);
+            json.put("groupSize", groupSize);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return json;
     }
 }

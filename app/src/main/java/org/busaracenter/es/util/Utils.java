@@ -96,11 +96,14 @@ public class Utils {
             PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
             Calendar calendar = Calendar.getInstance();
+            calendar.clear();
             calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
             calendar.set(Calendar.HOUR_OF_DAY, 9);
             calendar.set(Calendar.MINUTE, 30);
 
-            alarmMgr.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(),AlarmManager.INTERVAL_DAY * 7, alarmIntent);
+            if (alarmMgr != null)
+                alarmMgr.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(),AlarmManager.INTERVAL_DAY * 7, alarmIntent);
         }
     }
 

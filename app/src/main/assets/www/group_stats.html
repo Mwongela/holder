@@ -35,7 +35,7 @@
                         <p>
                             You can now keep track of your individual savings progress on <span class="gs-group"></span> savers <span
                                 class="gs-goal"></span> savings group as
-                            well as your groups savings progress. Your group has 40 members so far and you have <span data-role="rem-days">0</span> days
+                            well as your groups savings progress. Your group has <span id="member-count"></span> members so far and you have <span data-role="rem-days">0</span> days
                             remaining to reach your savings goals
                         </p>
                     </div>
@@ -55,7 +55,9 @@
 
                 <div class="row">
                     <div class="col-xs-6 col-xs-offset-3">
-                        <img src="img/icon-infographic-monthly.png" alt="">
+                        <div class="chart-container">
+                            <div id="my-pie-progress" class="chart-element"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -100,7 +102,9 @@
                 <div class="row">
 
                     <div class="col-xs-6 col-xs-offset-3">
-                        <img src="img/icon-inforgraphic-group-progress.png" alt="">
+                        <div class="chart-container">
+                            <div id="group-pie-progress" class="chart-element"></div>
+                        </div>
                     </div>
 
                 </div>
@@ -111,14 +115,14 @@
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Amount saved</h3>
-                        <h1 class="group-stat">&#8358; 75,200</h1>
+                        <h1 class="group-stat">&#8358; <span id="groupAmount"></span></h1>
 
                     </div>
                     <div class="col-xs-4">
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Amount remaining</h3>
-                        <h1 class="group-stat">&#8358; 25,200</h1>
+                        <h1 class="group-stat">&#8358; <span id="groupRem"></span></h1>
 
                     </div>
                     <div class="col-xs-4">
@@ -137,14 +141,14 @@
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">Group members</h3>
-                        <h1 class="group-stat">50</h1>
+                        <h1 class="group-stat" id="groupCount">50</h1>
 
                     </div>
                     <div class="col-xs-6">
 
                         <div class="orange-round"></div>
                         <h3 class="align-center title-green-smaller">No. of members who reached goal</h3>
-                        <h1 class="group-stat">25</h1>
+                        <h1 class="group-stat" id="goalReachers">25</h1>
 
                     </div>
 

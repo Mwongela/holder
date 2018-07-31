@@ -45,7 +45,17 @@ public class ESSyncAdapter extends AbstractThreadedSyncAdapter {
                               ContentProviderClient provider, SyncResult syncResult) {
         Log.i("MyServiceSyncAdapter", "onPerformSync");
 
+        SessionManager session = new SessionManager(getContext());
+
         Utils.scheduleAlarmManager(getContext());
+
+        String currentMonth = Utils.getCurrentMonth();
+        String sessionMonth = session.getMonth();
+
+        if (!currentMonth.equals(sessionMonth)) {
+            // TODO: Check if app is in foreground
+            session.clear();
+        }
 
         List<PageStat> pageStats = new ArrayList<>();
         Iterator<PageStat> pageStatIterator = PageStat.findAll(PageStat.class);
@@ -59,8 +69,6 @@ public class ESSyncAdapter extends AbstractThreadedSyncAdapter {
 
             pageStats.add(pageStat);
         }
-
-        SessionManager session = new SessionManager(getContext());
 
         if (session.getPhone().equals("")) return;
 

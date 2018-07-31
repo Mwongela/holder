@@ -4,5 +4,5 @@
     <string name="launcher_name">@string/app_name</string>
     <string name="activity_name">@string/launcher_name</string>
 
-    <string name="notification_template" formatted="false">Hey, you have a goal of %.0f this month. It’s the %s week and if you save %.0f you will able to achieve your goal</string>
+    <string name="notification_template" formatted="false">Hey, you have a goal of %.0f this month. It’s week %d and if you save %.0f you will able to achieve your goal</string>
 </resources>

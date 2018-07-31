@@ -40,17 +40,18 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         balance = goalAmount - totalContributions;
 
-
         String[] items = {"first", "second", "third", "fourth", "fifth"};
         int week = Utils.getWeekofMonth();
 
         double installment = balance;
 
-        if ((week - TOTAL_WEEKS) != 0) {
+        if ((week - TOTAL_WEEKS) != 0 && week < TOTAL_WEEKS) {
             installment = balance / (double) Math.abs(week - TOTAL_WEEKS);
         }
 
-        String template = String.format(context.getString(R.string.notification_template), goalAmount, items[week - 1], installment);
+        Log.e("WEEK", week + "");
+
+        String template = String.format(context.getString(R.string.notification_template), goalAmount, week, installment);
 
 
         Utils.showNotification(context, NOTIFICATION_ID, context.getString(R.string.app_name), template);

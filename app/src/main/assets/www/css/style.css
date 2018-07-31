@@ -261,3 +261,36 @@ html .ui-page-theme-a .ui-btn.ui-checkbox-on.ui-checkbox-on:after {
     background-color: orange !important;
     border-color: orange !important;
 }
+
+.chart-container {
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
+}
+
+.chart-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.chart-percent {
+    display: block;
+    font-weight: 300;
+    font-size: 3em;
+}
+
+.chart-saved-text {
+    display: block;
+    font-size: 1.1em;
+    text-transform: uppercase;
+    color: green;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.contribution-goal label {
+    padding-left: 30px !important;
+}

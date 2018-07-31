@@ -26,6 +26,13 @@ var app = {
     balance: 0,
     monthDays: 0,
     remainingDays: 0,
+    groupStats: {
+        groupTotal: 0,
+        groupMax: 0,
+        groupRem: 0,
+        goalReachers: 0,
+        groupSize: 0
+    },
 
     dataStore: [],
     populateDs: function populateDs(item) {
@@ -49,7 +56,7 @@ var app = {
 
     },
 
-    getMiniMonth: function(month) {
+    getMiniMonth: function (month) {
         var mm = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
         return mm[month];
@@ -85,6 +92,14 @@ var app = {
         }, function (error) {
             console.error(error);
         }, "");
+
+        window._es.getGroupStatistics(function (stats) {
+            console.log("GROUP_STATS=", stats);
+            app.groupStats = stats;
+            app.updateStats();
+        }, function () {
+            console.log("Error")
+        })
     },
 
     initialize: function initialize() {
@@ -99,7 +114,80 @@ var app = {
         document.addEventListener('deviceready', app.onDeviceReady, false);
     },
 
+    updateStats: function () {
+
+        console.log("UPDATING STATS");
+
+        $("#groupCount").html(app.groupStats.groupSize);
+        $("#groupRem").html(app.groupStats.groupRem);
+        $("#goalReachers").html(app.groupStats.goalReachers);
+        $("#groupAmount").html(app.groupStats.groupTotal);
+        $("#member-count").html(app.groupStats.groupSize);
+
+        var groupPercentSaved = 0;
+        if (app.groupStats.groupMax !== 0)
+            groupPercentSaved = Math.round(app.groupStats.groupTotal / app.groupStats.groupMax * 100);
+
+        var groupPercentageRem = 100 - groupPercentSaved;
+
+        Highcharts.setOptions({
+            colors: ['#FFA500', '#F5F5F5']
+        });
+
+        Highcharts.chart('group-pie-progress', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie',
+                margin: 0
+            },
+            title: {
+                text: "<p style='text-align: center;margin: 0;'><span class='chart-percent'>" + groupPercentSaved + "%</span>" +
+                "<span class='chart-saved-text'>Saved</span></p>",
+                verticalAlign: 'middle',
+                useHTML: true,
+                margin: [0, 0, 0, 0]
+            },
+            credits: {enabled: false},
+            tooltip: {
+                enabled: false
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: false,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: false,
+                    enableMouseTracking: false,
+                }
+            },
+            series: [{
+                name: 'Brands',
+                colorByPoint: true,
+                innerSize: '75%',
+                data: [
+                    ['Saved', groupPercentSaved],
+                    ['Remaining', groupPercentageRem]
+                ]
+            }],
+            legend: {
+                enabled: false
+            }
+        });
+    },
+
     onDeviceReady: function onDeviceReady() {
+
+        window._es.getGroupStatistics(function (stats) {
+            console.log("GROUP_STATS=", stats);
+            app.groupStats = stats;
+            app.updateStats();
+        }, function () {
+            console.log("Error")
+        });
 
         window._es.getSessionDetails(function (session) {
             app.surveyId = session.phone;
@@ -142,12 +230,18 @@ var app = {
             var params = {goalType: goalType};
             app.goalType = goalType;
             if (goalType) {
+                window._es.saveGoalType(function () {
+                    console.log("Saved successfully")
+                }, function () {
+                    console.log("Error while saving")
+                }, goalType);
                 $.mobile.changePage('goal_type_short_note.html');
             }
         });
 
         $(document).on('pagebeforeshow', '#goal-type-desc', function (e) {
             var goalType = app.goalType;
+            console.log("Goal type", app.goalType);
             if (!goalType) {
                 $.mobile.back();
                 return;
@@ -250,6 +344,7 @@ var app = {
             var group = element.attr('data-group');
             if (!group) return;
             app.groupType = group;
+            window._es.saveGroupType(null, null, group);
             $.mobile.changePage('goal_amount_selection_complete.html');
         });
 
@@ -305,6 +400,60 @@ var app = {
             $("[data-role=rem-days]").html(app.remainingDays);
             $("#my-amount-saved").html(app.totalContributions);
             $("#amount-balance").html(app.balance);
+
+            // Draw charts
+            var percentageSaved = Math.round(app.totalContributions / app.maxAmount * 100);
+            var percentageRem = 100 - percentageSaved;
+
+            Highcharts.setOptions({
+                colors: ['#00b200', '#F5F5F5']
+            });
+
+            Highcharts.chart('my-pie-progress', {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie',
+                    margin: 0
+                },
+                title: {
+                    text: "<p style='text-align: center;margin: 0;'><span class='chart-percent'>" + percentageSaved + "%</span>" +
+                    "<span class='chart-saved-text'>Saved</span></p>",
+                    verticalAlign: 'middle',
+                    useHTML: true,
+                    margin: [0, 0, 0, 0]
+                },
+                credits: {enabled: false},
+                tooltip: {
+                    enabled: false
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: false,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: false
+                        },
+                        showInLegend: false,
+                        enableMouseTracking: false,
+                    }
+                },
+                series: [{
+                    name: 'Brands',
+                    colorByPoint: true,
+                    innerSize: '75%',
+                    data: [
+                        ['Saved', percentageSaved],
+                        ['Remaining', percentageRem]
+                    ]
+                }],
+                legend: {
+                    enabled: false
+                }
+            });
+
+            app.updateStats();
         });
 
         $(document).on('change', 'input[name=month]', function (e) {
@@ -399,6 +548,14 @@ var app = {
                     var type = inputTxt.attr('type');
 
                     finalInputValue = type === 'radio' ? $("input[name=" + name + "]:checked").val() : inputTxt.val();
+
+                    if (type === 'checkbox') {
+                        var checkedVals = _.map($("input[name=" + name + "]:checked"), function (item) {
+                            return $(item).val();
+                        });
+                        console.log("CHECKED_VALUES", checkedVals);
+                        finalInputValue = _.join(checkedVals, ",");
+                    }
 
                     console.log("Final input value", finalInputValue, type, $("input[name=" + name + "]:checked").val());
                     if (!finalInputValue) return;
