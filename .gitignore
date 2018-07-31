@@ -1,3 +1,5 @@
+app/release/*
+*.apk
 # Non-project-specific build files:
 build.xml
 local.properties
@@ -23,3 +25,5 @@ out
 /captures
 .externalNativeBuild
 /.idea
+build
+.gradle

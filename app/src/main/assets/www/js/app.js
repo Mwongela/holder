@@ -49,7 +49,7 @@ var app = {
 
     },
 
-    getMiniMonth(month) {
+    getMiniMonth: function(month) {
         var mm = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
         return mm[month];

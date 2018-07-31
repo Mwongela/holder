@@ -1,4 +1,0 @@
-#Wed Jul 25 08:47:56 EAT 2018
-base.0=/Users/mwongela/Development/work/financial_inclusion/nigeria_project/platforms/android/app/build/intermediates/transforms/dex/release/0
-renamed.0=classes.dex
-file.0=/Users/mwongela/Development/work/financial_inclusion/nigeria_project/platforms/android/app/build/intermediates/transforms/dex/release/0/classes.dex
