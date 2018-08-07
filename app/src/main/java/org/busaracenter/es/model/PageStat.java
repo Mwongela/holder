@@ -3,6 +3,7 @@ package org.busaracenter.es.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.orm.SugarRecord;
+import com.orm.dsl.Ignore;
 
 public class PageStat extends SugarRecord {
 
@@ -26,6 +27,7 @@ public class PageStat extends SugarRecord {
     private String isInputPresent;
     @SerializedName("inputStats")
     @Expose
+    @Ignore
     private InputStat inputStats;
 
     public PageStat() {}

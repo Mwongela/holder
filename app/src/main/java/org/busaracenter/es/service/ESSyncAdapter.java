@@ -18,6 +18,7 @@ import org.busaracenter.es.model.InputStat;
 import org.busaracenter.es.model.PageStat;
 import org.busaracenter.es.network.API;
 import org.busaracenter.es.network.APIClient;
+import org.busaracenter.es.request.SaveAnalyticsRequest;
 import org.busaracenter.es.session.SessionManager;
 import org.busaracenter.es.util.Utils;
 import org.json.JSONObject;
@@ -57,6 +58,11 @@ public class ESSyncAdapter extends AbstractThreadedSyncAdapter {
             session.clear();
         }
 
+        syncAnalytics(session);
+
+    }
+
+    private void syncAnalytics(SessionManager session) {
         List<PageStat> pageStats = new ArrayList<>();
         Iterator<PageStat> pageStatIterator = PageStat.findAll(PageStat.class);
         while (pageStatIterator.hasNext()) {
@@ -72,52 +78,32 @@ public class ESSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (session.getPhone().equals("")) return;
 
-        JSONObject params = new JSONObject();
 
-        try {
-            Gson gson = Utils.getGson();
+        SaveAnalyticsRequest request = new SaveAnalyticsRequest();
+        request.setPhoneNumber(session.getPhone());
+        request.setDeviceBuild(Build.BRAND + "-" + Build.MODEL + "-" + Build.PRODUCT);
+        request.setPageStats(pageStats);
 
-            params.put("analytics", gson.toJson(pageStats));
-            params.put("application", "npower");
-            params.put("user", session.getPhone());
+        Call<ResponseBody> call = APIClient.getClient(getContext()).create(API.class).postAnalytics(request);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
-            Log.e("PARAMS", params.toString());
+                try {
 
-            Call<ResponseBody> call = APIClient.getClient(getContext()).create(API.class).postData(params.toString());
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    // TODO: Implement
 
-                    try {
+                } catch (Exception ex) {
 
-                        String body = response.body().string();
-
-                        if (body.equals("")) {
-                            // Success
-                            for (PageStat stat: pageStats) {
-
-                                if (stat.getInputStats() != null) {
-                                    stat.getInputStats().delete();
-                                }
-
-                                stat.delete();
-                            }
-                        }
-
-                    } catch (Exception ex) {
-
-                        onFailure(call, ex.getCause());
-                    }
+                    onFailure(call, ex.getCause());
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
 
-                }
-            });
-
-
-        } catch (Exception ex) { ex.printStackTrace(); }
+            }
+        });
     }
 
     /**

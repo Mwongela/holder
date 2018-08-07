@@ -10,11 +10,11 @@ public class GroupSaving extends SugarRecord {
     @Expose
     String month;
 
-    @SerializedName("group_type")
+    @SerializedName("groupType")
     @Expose
     String groupType;
 
-    @SerializedName("goal_type")
+    @SerializedName("goalType")
     @Expose
     String goalType;
 
@@ -22,7 +22,7 @@ public class GroupSaving extends SugarRecord {
     @Expose
     double amount;
 
-    @SerializedName("phone_number")
+    @SerializedName("phoneNumber")
     @Expose
     String phoneNumber;
 

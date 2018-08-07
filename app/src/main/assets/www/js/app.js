@@ -16,6 +16,8 @@ var currentMonth = function currentMonth() {
 
 var app = {
 
+    justSavedAmount : 0,
+
     goalType: "not defined",
     groupType: "not defined",
     selectedMonth: "",
@@ -64,14 +66,10 @@ var app = {
 
     getWeekString: function () {
         var curr = new Date();
-        var first = curr.getDate() - curr.getDay();
-        var last = first + 6;
+        var first = moment(curr).subtract(curr.getDay(), 'd');
+        var last = moment(first).add(6, 'd');
 
-        var firstDate = new Date(curr.setDate(first));
-        var lastDate = new Date(curr.setDate(last));
-
-        var week = app.getMiniMonth(firstDate.getMonth()) + " " + firstDate.getDate() + " - "
-            + app.getMiniMonth(lastDate.getMonth()) + " " + lastDate.getDate();
+        var week = first.format('Do MMM') + " - " + last.format('Do MMM');
 
         return week;
     },
@@ -325,6 +323,7 @@ var app = {
                         window.alert("Invalid contribution amount. Please note you can contribute upto " + app.balance);
                         return;
                     } else {
+                        app.justSavedAmount = amount;
                         $.mobile.changePage('contribution_vehicle.html');
                     }
 
@@ -454,6 +453,31 @@ var app = {
             });
 
             app.updateStats();
+        });
+
+        $(document).on('pagebeforeshow', '#contribution-success', function (e) {
+
+            var goalType = app.goalType;
+            var group = app.groupType;
+            var amount = 0;
+
+            var img = 'img/default-image.jpg';
+            if (group === 'savvy') {
+                img = 'img/icon-money-bag-smallest.png';
+                amount = 500;
+            } else if (group === 'power') {
+                img = 'img/icon-money-bag-small.png';
+                amount = 1000;
+            } else if (group === 'super') {
+                img = 'img/icon-money-bag-big.png';
+                amount = 2000;
+            } else if (group === 'champion') {
+                img = 'img/icon-money-bag-biggest.png';
+                amount = 2000;
+            }
+            $("#ss_goal-img").attr('src', img);
+            $("#ss_goal_type").html(goalType.capitalize());
+            $("#ss_amount").html(app.justSavedAmount);
         });
 
         $(document).on('change', 'input[name=month]', function (e) {

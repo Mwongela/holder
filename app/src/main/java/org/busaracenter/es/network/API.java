@@ -1,5 +1,6 @@
 package org.busaracenter.es.network;
 
+import org.busaracenter.es.request.SaveAnalyticsRequest;
 import org.json.JSONObject;
 
 import okhttp3.ResponseBody;
@@ -10,7 +11,7 @@ import retrofit2.http.POST;
 public interface API {
 
     @POST("busara.php")
-    Call<ResponseBody> postData(@Body String body);
+    Call<ResponseBody> postAnalytics(@Body SaveAnalyticsRequest body);
 
 
 }

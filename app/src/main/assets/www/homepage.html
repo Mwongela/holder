@@ -2,11 +2,11 @@
 
     <div role="main" class="ui-content" data-inset="false">
 
-        <div class="row" style="position: absolute; z-index: 200; width: 100%;top: 0; right: 0;">
+        <div class="row" style="position: absolute; z-index: 200; width: 100%;top: 0; right: 0; display: none;">
 
             <div class="col-xs-12" style="text-align: right;">
 
-                <a data-role='btn-upload-data' href="#" class="ui-btn ui-mini ui-btn-icon-left ui-btn-inline" style="color: grey;"><i class="zmdi zmdi-cloud-upload"></i> Upload Data</a>
+                <a href="#" class="ui-btn ui-btn-icon-left ui-btn-inline" style="color: grey;"><i class="zmdi zmdi-home"></i> Home</a>
 
             </div>
 
@@ -27,11 +27,47 @@
 
         </div>
 
+        <div class="row goal-type-section">
+            <div class="col-xs-12">
+                <h1 class="align-center title-grey">Your Current Goals</h1>
+                <ul id="current-goal-type-list" class="goal-type-list" data-role="listview" data-icon="false">
+
+                    <li>
+                        <a data-role="goal_type_selection" href="#" data-goal-type="entrepreneurship">
+
+                            <div class="row">
+
+                                <div class="col-xs-3">
+                                    <img src="img/icon-bulb.png" class="ui-thumbnail ui-thumbnail-circular"/>
+                                </div>
+                                <div class="col-xs-8">
+                                    <div>
+                                        <h2 class="title-green-smaller">Enterpreneurship</h2>
+                                        <p>
+                                            Are you an entrepreneur or aspiring to start your own business? Save every
+                                            month to boost your business
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-xs-1">
+                                    <img src="img/icon-chev.png" alt="">
+                                </div>
+
+                            </div>
+
+
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
         <div class="row month-section">
 
             <div class="col-xs-12">
 
-                <h1 class="align-center title-grey">Choose your goal setting month</h1>
+                <h1 class="align-center title-grey">What month do you want to save towards?</h1>
 
                 <ul class="select-month">
 
