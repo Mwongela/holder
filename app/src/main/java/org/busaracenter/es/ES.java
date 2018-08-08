@@ -12,6 +12,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.busaracenter.es.model.Goal;
 import org.busaracenter.es.model.GroupSaving;
 import org.busaracenter.es.model.InputStat;
 import org.busaracenter.es.model.PageStat;
@@ -93,6 +94,12 @@ public class ES extends CordovaPlugin {
                 String groupType = stat.getPageName().replace("_goal_amount_selection_complete", "");
                 session.setGroupType(Utils.getGroupType(groupType));
 
+                /*// Use the goal note to query
+                List<Goal> goalQuery = Goal.find(Goal.class, "GOAL_NOTE=?", session.getGoalNote());
+                Goal goal;
+                if (goalQuery.size() > 0) {
+
+                }*/
             }
 
             if (stat.getIsInputPresent().equalsIgnoreCase("yes")) {
@@ -105,6 +112,9 @@ public class ES extends CordovaPlugin {
 
                 } else if (inputStat.getName().equalsIgnoreCase("month")) {
                     session.setMonth(inputStat.getFinalInputValue());
+
+                } else if (inputStat.getName().equalsIgnoreCase("goal_short_note")) {
+                    session.setGoalNote(inputStat.getFinalInputValue());
 
                 } else if (inputStat.getName().equalsIgnoreCase("contribution_amount")) {
                     String previousContributions = session.getContributions();

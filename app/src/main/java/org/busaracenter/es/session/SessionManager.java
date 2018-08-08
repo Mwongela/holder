@@ -13,6 +13,8 @@ public class SessionManager {
     public static final String KEY_CONTRIBUTIONS = "contributions";
     public static final String KEY_GOAL_TYPE = "goal_type";
     public static final String KEY_GROUP_TYPE = "group_type";
+    public static final String KEY_GOAL_NOTE = "goal_note";
+    public static final String KEY_NEXT_NOTIFICATION_TIME = "next_notification_time";
 
     SharedPreferences pref;
     SharedPreferences.Editor editor;
@@ -70,6 +72,24 @@ public class SessionManager {
 
     public String getGoalType() {
         return pref.getString(KEY_GOAL_TYPE, "");
+    }
+
+    public String getGoalNote() {
+        return pref.getString(KEY_GOAL_NOTE, "");
+    }
+
+    public void setGoalNote(String goalNote) {
+        editor.putString(KEY_GOAL_NOTE, goalNote);
+        editor.commit();
+    }
+
+    public long getNextNotificationTime() {
+        return pref.getLong(KEY_NEXT_NOTIFICATION_TIME, System.currentTimeMillis() - 1);
+    }
+
+    public void setNextNotificationTime(long nextNotificationTime) {
+        editor.putLong(KEY_NEXT_NOTIFICATION_TIME, nextNotificationTime);
+        editor.commit();
     }
 
     public boolean isSessionValid() {
