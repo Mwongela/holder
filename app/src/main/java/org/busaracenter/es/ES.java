@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -37,11 +38,14 @@ public class ES extends CordovaPlugin {
         super.initialize(cordova, webView);
 
         ESSyncAdapter.initializeSyncAdapter(webView.getContext());
+        ESSyncAdapter.syncImmediately(webView.getContext());
         Utils.clearNotifications(webView.getContext());
     }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
+        Log.e("ARGS", args.toString());
 
         if (action.equals("addRecord")) {
             addRecord(args, callbackContext);
@@ -66,6 +70,42 @@ public class ES extends CordovaPlugin {
                             callbackContext.success(stats);
                         }
                     });
+                }
+            });
+            return true;
+        } else if (action.equals("getGoals")) {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    JSONArray goals = getGoals(Utils.getCurrentMonth());
+                    cordova.getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            callbackContext.success(goals);
+                        }
+                    });
+                }
+            });
+            return true;
+        }
+
+        else if (action.equals("setCurrentGoalId")) {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        long currentGoalId = args.getInt(0);
+                        setCurrentGoal(currentGoalId);
+                        cordova.getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                callbackContext.success();
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        callbackContext.error(e.getMessage());
+                    }
                 }
             });
             return true;
@@ -94,12 +134,18 @@ public class ES extends CordovaPlugin {
                 String groupType = stat.getPageName().replace("_goal_amount_selection_complete", "");
                 session.setGroupType(Utils.getGroupType(groupType));
 
-                /*// Use the goal note to query
-                List<Goal> goalQuery = Goal.find(Goal.class, "GOAL_NOTE=?", session.getGoalNote());
-                Goal goal;
-                if (goalQuery.size() > 0) {
+            } else if (stat.getPageName().endsWith("group_stats") && stat.getPreviousPage().endsWith("goal_amount_selection_complete")) {
+                Goal goal = new Goal();
+                goal.setGroupType(session.getGroupType());
+                goal.setGoalType(session.getGoalType());
+                goal.setGoalNote(session.getGoalNote());
+                goal.setCreatedAt(System.currentTimeMillis());
+                goal.setAllowNotification(session.isAllowNotifications());
+                goal.setMonth(session.getMonth());
 
-                }*/
+                goal.save();
+
+                setCurrentGoal(goal.getId());
             }
 
             if (stat.getIsInputPresent().equalsIgnoreCase("yes")) {
@@ -129,11 +175,16 @@ public class ES extends CordovaPlugin {
                         String finalInput = inputStat.getFinalInputValue();
                         if (Pattern.matches("\\d+(\\.\\d+)?", finalInput)) {
                             double amount = Double.parseDouble(finalInput);
+                            App.amount = amount;
                             saveGroupContribution(amount, session);
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
+                } else if (inputStat.getName().equalsIgnoreCase("savings-vehicle")) {
+                    App.contributionVehicle = inputStat.getFinalInputValue();
+
+                    App.saveContribution();
                 }
             }
 
@@ -145,12 +196,14 @@ public class ES extends CordovaPlugin {
 
     private void saveGroupContribution(double amount, SessionManager session) {
 
+        Goal goal = Goal.findById(Goal.class, App.currentGoalId);
         GroupSaving contrib = new GroupSaving();
         contrib.setAmount(amount);
         contrib.setPhoneNumber(session.getPhone());
-        contrib.setMonth(session.getMonth());
-        contrib.setGroupType(session.getGroupType());
-        contrib.setGoalType(session.getGoalType());
+        contrib.setMonth(goal.getMonth());
+        contrib.setGroupType(goal.getGroupType());
+        contrib.setGoalType(goal.getGoalType());
+        contrib.setUploaded(false);
 
         contrib.save();
     }
@@ -191,6 +244,22 @@ public class ES extends CordovaPlugin {
             json.put("monthDays", monthDays);
             json.put("remainingDays", remainingDays);
 
+            if (App.currentGoalId != -1) {
+                Goal goal = Goal.findById(Goal.class, App.currentGoalId);
+
+                totalContributions = goal.getTotalContributions();
+                maxAmount = Utils.getSavingAmountByGroup().get(goal.getGroupType());
+                double balance = maxAmount - totalContributions;
+
+                json.put("month", goal.getMonth());
+                json.put("goalType", goal.getGoalType());
+                json.put("groupType", goal.getGroupType());
+                json.put("contributions", "");
+                json.put("maxAmount", maxAmount);
+                json.put("totalContributions", totalContributions);
+                json.put("balance", balance >= 0 ? balance : 0);
+            }
+
             callbackContext.success(json);
 
         } catch (Exception ex) {
@@ -228,21 +297,39 @@ public class ES extends CordovaPlugin {
     }
 
     private JSONObject getGroupStatistics() {
-        SessionManager session = new SessionManager(webView.getContext());
         JSONObject json = new JSONObject();
+
+        SessionManager session = new SessionManager(cordova.getContext());
 
         try {
 
-            List<GroupSaving> groupSavings = GroupSaving.find(GroupSaving.class, "MONTH=?", session.getMonth());
+            Goal goal = null;
+            if (App.currentGoalId != -1) {
+                goal = Goal.findById(Goal.class, App.currentGoalId);
+            }
+
+            List<GroupSaving> groupSavings = null;
+            double groupAmount = 0;
+            if (goal == null) {
+               groupSavings = new ArrayList<>();//GroupSaving.find(GroupSaving.class, "MONTH=?", session.getMonth());
+            } else {
+                Log.e("GOAL_DETAILS", goal.getGroupType() + " " + goal.getGoalType());
+                groupSavings = GroupSaving.find(GroupSaving.class, "MONTH=? AND GROUP_TYPE=? AND GOAL_TYPE=?", goal.getMonth(), goal.getGroupType(), goal.getGoalType());
+                groupAmount = Utils.getSavingAmountByGroup().get(goal.getGroupType());
+            }
             double groupTotal = 0;
             double groupMax = 0;
             double groupRem = 0;
             HashMap<String, Double> groupMembers = new HashMap<String, Double>();
             int goalReachers = 0;
 
+            boolean iveMadeContribution = false;
             for (GroupSaving groupSaving: groupSavings) {
 
                 groupTotal += groupSaving.getAmount();
+                if (groupSaving.getPhoneNumber().equalsIgnoreCase(session.getPhone())) {
+                    iveMadeContribution = true;
+                }
 
                 if (!groupMembers.containsKey(groupSaving.getPhoneNumber()))
                     groupMembers.put(groupSaving.getPhoneNumber(), 0.0);
@@ -252,15 +339,16 @@ public class ES extends CordovaPlugin {
                 groupMembers.put(groupSaving.getPhoneNumber(), mmAmount);
             }
 
-            int groupSize = groupMembers.keySet().size();
-            groupMax = groupSize * Utils.getSavingAmountByGroup().get(session.getGroupType());
+            int groupSize = iveMadeContribution ? groupMembers.keySet().size() : groupMembers.keySet().size() + 1;
+
+            groupMax = groupSize * groupAmount;
 
             if (groupMax > groupTotal)
                 groupRem = groupMax - groupTotal;
 
             for (String key: groupMembers.keySet()) {
                 Double mmAmount = groupMembers.get(key);
-                if (mmAmount >= Utils.getSavingAmountByGroup().get(session.getGroupType())) {
+                if (mmAmount >= groupAmount) {
                     goalReachers += 1;
                 }
             }
@@ -276,5 +364,32 @@ public class ES extends CordovaPlugin {
         }
 
         return json;
+    }
+
+    private JSONArray getGoals(String month) {
+        try {
+            Gson gson = new Gson();
+            List<Goal> goals = Goal.find(Goal.class, "MONTH=?", month);
+
+            JSONArray array = new JSONArray();
+
+            for (Goal goal: goals) {
+
+                JSONObject goalJson = new JSONObject(gson.toJson(goal));
+                goalJson.put("goalMax", Utils.getSavingAmountByGroup().get(goal.getGroupType()));
+                goalJson.put("contributions", goal.getTotalContributions());
+
+                array.put(goalJson);
+            }
+
+            return array;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new JSONArray();
+        }
+    }
+
+    private void setCurrentGoal(long goalId) {
+        App.currentGoalId = goalId;
     }
 }

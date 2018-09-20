@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.orm.SugarRecord;
 
+import java.util.UUID;
+
 public class GroupSaving extends SugarRecord {
 
     @SerializedName("month")
@@ -26,11 +28,10 @@ public class GroupSaving extends SugarRecord {
     @Expose
     String phoneNumber;
 
-    @SerializedName("id")
+    @SerializedName("secondaryId")
     @Expose
-    int remoteId = -1;
+    String remoteId = UUID.randomUUID().toString();
 
-    boolean myRecord = false;
     boolean uploaded = true;
 
     public GroupSaving() {
@@ -76,19 +77,19 @@ public class GroupSaving extends SugarRecord {
         this.phoneNumber = phoneNumber;
     }
 
-    public boolean isMyRecord() {
-        return myRecord;
-    }
-
-    public void setMyRecord(boolean myRecord) {
-        this.myRecord = myRecord;
-    }
-
     public boolean isUploaded() {
         return uploaded;
     }
 
     public void setUploaded(boolean uploaded) {
         this.uploaded = uploaded;
+    }
+
+    public String getRemoteId() {
+        return remoteId;
+    }
+
+    public void setRemoteId(String remoteId) {
+        this.remoteId = remoteId;
     }
 }

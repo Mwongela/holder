@@ -16,7 +16,9 @@ var currentMonth = function currentMonth() {
 
 var app = {
 
-    justSavedAmount : 0,
+    goals: [],
+    showCurrentGoals: false,
+    justSavedAmount: 0,
 
     goalType: "not defined",
     groupType: "not defined",
@@ -58,6 +60,24 @@ var app = {
 
     },
 
+    initBindings: function () {
+        rivets.bind(document.body, {
+            goals: app.goals,
+            showCurrentGoals: app.showCurrentGoals,
+            controllers: {
+                navigateToGoal: function(e, goal) {
+                    var goal = app.goals[goal.index];
+                    window._es.setCurrentGoalId(function() {
+
+                        app.updateSessionVars();
+
+                        $.mobile.changePage('group_stats.html');
+                    }, function() {}, goal.id);
+                }
+            }
+        });
+    },
+
     getMiniMonth: function (month) {
         var mm = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -75,6 +95,8 @@ var app = {
     },
 
     updateSessionVars: function () {
+        var currentPage = arguments[0];
+
         window._es.getSessionDetails(function (session) {
             app.surveyId = session.phone;
             app.goalType = session.goalType;
@@ -87,6 +109,10 @@ var app = {
             app.balance = session.balance;
             app.remainingDays = session.remainingDays;
             app.monthDays = session.monthDays;
+
+            if (currentPage === 'group_stats')
+                app.updateMyStats();
+
         }, function (error) {
             console.error(error);
         }, "");
@@ -94,10 +120,11 @@ var app = {
         window._es.getGroupStatistics(function (stats) {
             console.log("GROUP_STATS=", stats);
             app.groupStats = stats;
-            app.updateStats();
+            if (currentPage === 'group_stats')
+                app.updateStats();
         }, function () {
             console.log("Error")
-        })
+        });
     },
 
     initialize: function initialize() {
@@ -110,6 +137,85 @@ var app = {
         console.log("Binding events");
 
         document.addEventListener('deviceready', app.onDeviceReady, false);
+    },
+
+    updateMyStats: function() {
+        var goalType = app.goalType;
+        var group = app.groupType;
+        var amount = 0;
+
+        var img = 'img/default-image.jpg';
+        if (group === 'savvy') {
+            img = 'img/icon-money-bag-smallest.png';
+            amount = 500;
+        } else if (group === 'power') {
+            img = 'img/icon-money-bag-small.png';
+            amount = 1000;
+        } else if (group === 'super') {
+            img = 'img/icon-money-bag-big.png';
+            amount = 2000;
+        } else if (group === 'champion') {
+            img = 'img/icon-money-bag-biggest.png';
+            amount = 2000;
+        }
+        $("#gs-img").attr('src', img);
+        $(".gs-goal").html(goalType.capitalize());
+        $(".gs-group").html(group.capitalize());
+        $("[data-role=rem-days]").html(app.remainingDays);
+        $("#my-amount-saved").html(app.totalContributions);
+        $("#amount-balance").html(app.balance);
+
+        // Draw charts
+        var percentageSaved = Math.round(app.totalContributions / app.maxAmount * 100);
+        var percentageRem = 100 - percentageSaved;
+
+        Highcharts.setOptions({
+            colors: ['#00b200', '#F5F5F5']
+        });
+
+        Highcharts.chart('my-pie-progress', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie',
+                margin: 0
+            },
+            title: {
+                text: "<p style='text-align: center;margin: 0;'><span class='chart-percent'>" + percentageSaved + "%</span>" +
+                "<span class='chart-saved-text'>Saved</span></p>",
+                verticalAlign: 'middle',
+                useHTML: true,
+                margin: [0, 0, 0, 0]
+            },
+            credits: {enabled: false},
+            tooltip: {
+                enabled: false
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: false,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: false,
+                    enableMouseTracking: false,
+                }
+            },
+            series: [{
+                name: 'Brands',
+                colorByPoint: true,
+                innerSize: '75%',
+                data: [
+                    ['Saved', percentageSaved],
+                    ['Remaining', percentageRem]
+                ]
+            }],
+            legend: {
+                enabled: false
+            }
+        });
     },
 
     updateStats: function () {
@@ -182,7 +288,6 @@ var app = {
         window._es.getGroupStatistics(function (stats) {
             console.log("GROUP_STATS=", stats);
             app.groupStats = stats;
-            app.updateStats();
         }, function () {
             console.log("Error")
         });
@@ -203,7 +308,7 @@ var app = {
             if (app.isValid) {
 
                 setTimeout(function () {
-                    $.mobile.changePage('group_stats.html');
+                    $.mobile.changePage('homepage.html');
                 }, 100)
 
             } else {
@@ -375,84 +480,7 @@ var app = {
 
         $(document).on('pagebeforeshow', '#group-stats', function (e) {
 
-            var goalType = app.goalType;
-            var group = app.groupType;
-            var amount = 0;
 
-            var img = 'img/default-image.jpg';
-            if (group === 'savvy') {
-                img = 'img/icon-money-bag-smallest.png';
-                amount = 500;
-            } else if (group === 'power') {
-                img = 'img/icon-money-bag-small.png';
-                amount = 1000;
-            } else if (group === 'super') {
-                img = 'img/icon-money-bag-big.png';
-                amount = 2000;
-            } else if (group === 'champion') {
-                img = 'img/icon-money-bag-biggest.png';
-                amount = 2000;
-            }
-            $("#gs-img").attr('src', img);
-            $(".gs-goal").html(goalType.capitalize());
-            $(".gs-group").html(group.capitalize());
-            $("[data-role=rem-days]").html(app.remainingDays);
-            $("#my-amount-saved").html(app.totalContributions);
-            $("#amount-balance").html(app.balance);
-
-            // Draw charts
-            var percentageSaved = Math.round(app.totalContributions / app.maxAmount * 100);
-            var percentageRem = 100 - percentageSaved;
-
-            Highcharts.setOptions({
-                colors: ['#00b200', '#F5F5F5']
-            });
-
-            Highcharts.chart('my-pie-progress', {
-                chart: {
-                    plotBackgroundColor: null,
-                    plotBorderWidth: null,
-                    plotShadow: false,
-                    type: 'pie',
-                    margin: 0
-                },
-                title: {
-                    text: "<p style='text-align: center;margin: 0;'><span class='chart-percent'>" + percentageSaved + "%</span>" +
-                    "<span class='chart-saved-text'>Saved</span></p>",
-                    verticalAlign: 'middle',
-                    useHTML: true,
-                    margin: [0, 0, 0, 0]
-                },
-                credits: {enabled: false},
-                tooltip: {
-                    enabled: false
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: false,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: false
-                        },
-                        showInLegend: false,
-                        enableMouseTracking: false,
-                    }
-                },
-                series: [{
-                    name: 'Brands',
-                    colorByPoint: true,
-                    innerSize: '75%',
-                    data: [
-                        ['Saved', percentageSaved],
-                        ['Remaining', percentageRem]
-                    ]
-                }],
-                legend: {
-                    enabled: false
-                }
-            });
-
-            app.updateStats();
         });
 
         $(document).on('pagebeforeshow', '#contribution-success', function (e) {
@@ -508,9 +536,35 @@ var app = {
             app.save();
         }, false);
 
-        $(document).on("pagecontainerload", function (event, data) {
+        $(document).on("pagecreate", function () {
+            window._es.getGoals(function (goals) {
+                console.log("GOALS", goals);
+                app.goals = _.map(goals, function(goal) {
+                    var img = 'img/default-image.jpg';
 
-            app.updateSessionVars();
+                    if (goal.goalType === 'entrepreneurship') {
+                        img = 'img/icon-bulb.png';
+                    } else if (goal.goalType === 'employability') {
+                        img = 'img/icon-briefcase.png';
+                    } else if (goal.goalType === 'personal') {
+                        img = 'img/icon-heart.png';
+                    }
+
+                    if (goal.groupType === "champion") {
+                        goal.goalMax = "-"
+                    }
+                    goal.img = img;
+                    goal.timestamp = moment(goal.timestamp).format("MMM Do, hh:mma");
+                    return goal;
+                });
+                app.showCurrentGoals = goals.length > 0;
+
+                app.initBindings();
+            }, function () {
+            });
+        });
+
+        $(document).on("pagecontainerload", function (event, data) {
 
             var pageAnalytics = {};
 
@@ -533,6 +587,8 @@ var app = {
             var absUrl = data.absUrl;
             var thePreviousPage = app.prevPage;
             var currentPage = app.util.getPageTitleFromUrl(absUrl);
+
+            app.updateSessionVars(currentPage);
 
             if (currentPage === 'goal_type_desc' || currentPage === 'goal_type_short_note') currentPage = app.goalType + "_" + currentPage;
             else if (currentPage === 'goal_amount_selection') currentPage = app.goalType + "_" + currentPage;

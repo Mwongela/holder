@@ -14,6 +14,7 @@ public class SessionManager {
     public static final String KEY_GOAL_TYPE = "goal_type";
     public static final String KEY_GROUP_TYPE = "group_type";
     public static final String KEY_GOAL_NOTE = "goal_note";
+    public static final String KEY_ALLOW_NOTIFICATIONS = "allow_notifications";
     public static final String KEY_NEXT_NOTIFICATION_TIME = "next_notification_time";
 
     SharedPreferences pref;
@@ -83,6 +84,15 @@ public class SessionManager {
         editor.commit();
     }
 
+    public boolean isAllowNotifications() {
+        return pref.getBoolean(KEY_ALLOW_NOTIFICATIONS, true);
+    }
+
+    public void setAllowNotifications(boolean allowNotifications) {
+        editor.putBoolean(KEY_ALLOW_NOTIFICATIONS, allowNotifications);
+        editor.commit();
+    }
+
     public long getNextNotificationTime() {
         return pref.getLong(KEY_NEXT_NOTIFICATION_TIME, System.currentTimeMillis() - 1);
     }
@@ -91,6 +101,7 @@ public class SessionManager {
         editor.putLong(KEY_NEXT_NOTIFICATION_TIME, nextNotificationTime);
         editor.commit();
     }
+
 
     public boolean isSessionValid() {
         String phone = getPhone();

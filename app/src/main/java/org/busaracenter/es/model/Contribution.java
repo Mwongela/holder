@@ -20,6 +20,8 @@ public class Contribution extends SugarRecord {
     @Expose
     String contributionVehicle;
 
+    boolean uploaded = false;
+
     public Contribution() {
     }
 
@@ -53,5 +55,13 @@ public class Contribution extends SugarRecord {
 
     public void setGoal(Goal goal) {
         this.goal = goal;
+    }
+
+    public boolean isUploaded() {
+        return uploaded;
+    }
+
+    public void setUploaded(boolean uploaded) {
+        this.uploaded = uploaded;
     }
 }

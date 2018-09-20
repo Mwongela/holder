@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <manifest android:hardwareAccelerated="true" android:name="org.busaracenter.es.App"
-    android:versionCode="10004"
-    android:versionName="1.0.4"
+    android:versionCode="10005"
+    android:versionName="1.0.5"
     package="org.busaracenter.es"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
         <meta-data android:name="DATABASE" android:value="_es.db" />
-        <meta-data android:name="VERSION" android:value="5" />
+        <meta-data android:name="VERSION" android:value="7" />
         <meta-data android:name="QUERY_LOG" android:value="true" />
         <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="org.busaracenter.es" />
         <provider android:authorities="org.busaracenter.es.content" android:exported="false" android:label="Empower Savings" android:name=".service.ESContentProvider" android:syncable="true" />

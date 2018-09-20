@@ -27,26 +27,31 @@
 
         </div>
 
-        <div class="row goal-type-section">
+        <div class="row goal-type-section" rv-show="showCurrentGoals">
             <div class="col-xs-12">
                 <h1 class="align-center title-grey">Your Current Goals</h1>
                 <ul id="current-goal-type-list" class="goal-type-list" data-role="listview" data-icon="false">
 
-                    <li>
-                        <a data-role="goal_type_selection" href="#" data-goal-type="entrepreneurship">
-
+                    <li rv-each-goal="goals">
+                        <a href="#" rv-on-click="controllers.navigateToGoal">
                             <div class="row">
-
                                 <div class="col-xs-3">
-                                    <img src="img/icon-bulb.png" class="ui-thumbnail ui-thumbnail-circular"/>
+                                    <img rv-src="goal.img" class="ui-thumbnail ui-thumbnail-circular"/>
                                 </div>
                                 <div class="col-xs-8">
                                     <div>
-                                        <h2 class="title-green-smaller">Enterpreneurship</h2>
-                                        <p>
-                                            Are you an entrepreneur or aspiring to start your own business? Save every
-                                            month to boost your business
+                                        <h2 class="title-green-smaller">
+                                            <span rv-text="goal.groupType"></span> savers -
+                                            <span rv-text="goal.goalType"></span>
+                                        </h2>
+                                        <p rv-text="goal.goalNote">
                                         </p>
+                                        <p>
+                                            Saved: &#8358;
+                                            <span rv-text="goal.contributions"></span> /
+                                            <span rv-text="goal.goalMax"></span>
+                                        </p>
+                                        <p>Created at <span rv-text="goal.timestamp"></span></p>
                                     </div>
                                 </div>
                                 <div class="col-xs-1">
